@@ -5,4 +5,12 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>dnstools</name>
   <description>Some tools to set and get DNS server for various OS.</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.4</version>
+		<scope>test</scope>
+  	</dependency>
+  </dependencies>
 </project>
