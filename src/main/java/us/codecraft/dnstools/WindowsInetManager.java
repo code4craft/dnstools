@@ -14,11 +14,16 @@ import java.util.regex.Pattern;
  */
 public class WindowsInetManager implements InetConnectionManager {
 
-	private static final List<String> KEY_DNS_SERVER = Collections.singletonList("DNS 服务器");
-	private static final List<String> KEY_DHCP_ENABLE = Collections.singletonList("DHCP 已启用");
-	private static final List<String> KEY_DHCP_SERVER = Collections.singletonList("DHCP 服务器");
-	private static final List<String> KEY_IPV4 = Collections.singletonList("IPv4 地址");
-	private static final List<String> KEY_GATEWAY = Collections.singletonList("默认网关");
+	private static final List<String> KEY_DNS_SERVER = Collections
+			.singletonList("DNS 服务器");
+	private static final List<String> KEY_DHCP_ENABLE = Collections
+			.singletonList("DHCP 已启用");
+	private static final List<String> KEY_DHCP_SERVER = Collections
+			.singletonList("DHCP 服务器");
+	private static final List<String> KEY_IPV4 = Collections
+			.singletonList("IPv4 地址");
+	private static final List<String> KEY_GATEWAY = Collections
+			.singletonList("默认网关");
 	private static final String SEPERATOR = ". .";
 
 	private Pattern patternForTitleLine = Pattern.compile("^[^\\s]+");
@@ -27,7 +32,8 @@ public class WindowsInetManager implements InetConnectionManager {
 		try {
 			StringBuilder stringBuilder = new StringBuilder();
 			Process exec = Runtime.getRuntime().exec("ipconfig /all");
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream(), "GBK"));
+			BufferedReader bufferedReader = new BufferedReader(
+					new InputStreamReader(exec.getInputStream(), "GBK"));
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
 				Matcher matcher = patternForTitleLine.matcher(line);
@@ -40,7 +46,8 @@ public class WindowsInetManager implements InetConnectionManager {
 			}
 			return null;
 		} catch (Exception e) {
-			throw new RuntimeException("call command \"ipconfig /all\" error, maybe it's disabled.");
+			throw new RuntimeException(
+					"call command \"ipconfig /all\" error, maybe it's disabled.");
 		}
 	}
 
@@ -67,7 +74,6 @@ public class WindowsInetManager implements InetConnectionManager {
 	 */
 	@Override
 	public InetConnectinoProperties getDefaultConnectionProperties() {
-		String ipconfig = getIpconfig();
 		return null;
 	}
 
