@@ -26,7 +26,8 @@ public class WindowsInetManager implements InetConnectionManager {
 
 	private final Map<String, List<String>> keys = new HashMap<String, List<String>>();
 
-	private final static List<String> TYPE_PREFIX = Arrays.asList("以太网适配器", "隧道适配器");
+	private final static List<String> TYPE_PREFIX = Arrays.asList("以太网适配器",
+			"隧道适配器");
 
 	public WindowsInetManager() {
 		initMap();
@@ -101,7 +102,8 @@ public class WindowsInetManager implements InetConnectionManager {
 		name = processName(name);
 		Map<String, List<String>> winProperties = processWinProperties(lines, 1);
 		Map<String, List<String>> propertiMaps = getInetPropertiesKey(winProperties);
-		propertiMaps.put(InetConnectinoProperties.KEY_NAME, Collections.singletonList(name));
+		propertiMaps.put(InetConnectinoProperties.KEY_NAME,
+				Collections.singletonList(name));
 		return new InetConnectinoProperties(propertiMaps);
 	}
 
@@ -111,7 +113,6 @@ public class WindowsInetManager implements InetConnectionManager {
 		if (name.endsWith(":")) {
 			name = name.substring(0, name.length() - 1);
 		}
-<<<<<<< HEAD
 		name = name.trim();
 		String nameType = getGroupOneIfMatch(nameTypePattern, name);
 		if (nameType != null) {
@@ -123,13 +124,6 @@ public class WindowsInetManager implements InetConnectionManager {
 		}
 		return name;
 
-=======
-		Map<String, List<String>> winProperties = processProperties(lines, 1);
-		Map<String, List<String>> propertiMaps = getInetPropertiesKey(winProperties);
-		propertiMaps.put(InetConnectinoProperties.KEY_NAME,
-				Collections.singletonList(name));
-		return new InetConnectinoProperties(propertiMaps);
->>>>>>> 4e4cc5ae7a89333156638abfa5dbaeecf5c757ab
 	}
 
 	private String convertWinPropertiesToInetProperties(String winkey) {
@@ -156,14 +150,9 @@ public class WindowsInetManager implements InetConnectionManager {
 		return list;
 	}
 
-<<<<<<< HEAD
-	private Map<String, List<String>> getInetPropertiesKey(Map<String, List<String>> winProperties) {
-		Map<String, List<String>> propertiMaps = new LinkedHashMap<String, List<String>>();
-=======
 	private Map<String, List<String>> getInetPropertiesKey(
 			Map<String, List<String>> winProperties) {
 		Map<String, List<String>> propertiMaps = new HashMap<String, List<String>>();
->>>>>>> 4e4cc5ae7a89333156638abfa5dbaeecf5c757ab
 		for (Entry<String, List<String>> entry : winProperties.entrySet()) {
 			String key = convertWinPropertiesToInetProperties(entry.getKey());
 			if (key == null) {
@@ -185,21 +174,12 @@ public class WindowsInetManager implements InetConnectionManager {
 	private Pattern valuePattern = Pattern.compile(":\\s*(.*)");
 
 	private String getGroupOneIfMatch(Pattern pattern, String line) {
-		Matcher matcher = pattern.matcher(line);
-		if (matcher.find()) {
-			return matcher.group(1);
-		}
-		return null;
+		return MiscUtils.getGroupOneIfMatch(pattern, line);
 	}
 
-<<<<<<< HEAD
-	private Map<String, List<String>> processWinProperties(String[] lines, int start) {
-		Map<String, List<String>> winPropertiMaps = new LinkedHashMap<String, List<String>>();
-=======
-	private Map<String, List<String>> processProperties(String[] lines,
+	private Map<String, List<String>> processWinProperties(String[] lines,
 			int start) {
-		Map<String, List<String>> winPropertiMaps = new HashMap<String, List<String>>();
->>>>>>> 4e4cc5ae7a89333156638abfa5dbaeecf5c757ab
+		Map<String, List<String>> winPropertiMaps = new LinkedHashMap<String, List<String>>();
 		String lastKey = InetConnectinoProperties.KEY_NAME;
 		for (int i = start; i < lines.length; i++) {
 			String line = lines[i];
@@ -287,10 +267,11 @@ public class WindowsInetManager implements InetConnectionManager {
 		try {
 			if (dnsServers.size() >= 1) {
 				Process exec = Runtime.getRuntime().exec(
-						"netsh interface ip set dns \"" + name + "\" static " + dnsServers.get(0));
+						"netsh interface ip set dns \"" + name + "\" static "
+								+ dnsServers.get(0));
 				if (logger.isDebugEnabled()) {
-					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream(),
-							"GBK"));
+					BufferedReader bufferedReader = new BufferedReader(
+							new InputStreamReader(exec.getInputStream(), "GBK"));
 					String line = null;
 					while ((line = bufferedReader.readLine()) != null) {
 						logger.debug(line);
@@ -299,10 +280,11 @@ public class WindowsInetManager implements InetConnectionManager {
 			}
 			if (dnsServers.size() >= 2) {
 				Process exec = Runtime.getRuntime().exec(
-						"netsh interface ip add dns name=\"" + name + "\" addr=" + dnsServers.get(1) + " index=2 ");
+						"netsh interface ip add dns name=\"" + name
+								+ "\" addr=" + dnsServers.get(1) + " index=2 ");
 				if (logger.isDebugEnabled()) {
-					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream(),
-							"GBK"));
+					BufferedReader bufferedReader = new BufferedReader(
+							new InputStreamReader(exec.getInputStream(), "GBK"));
 					String line = null;
 					while ((line = bufferedReader.readLine()) != null) {
 						logger.debug(line);
