@@ -1,16 +1,20 @@
 package us.codecraft.dnstools;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author yihua.huang@dianping.com
@@ -18,7 +22,11 @@ import java.util.regex.Pattern;
  */
 public class WindowsInetManager implements InetConnectionManager {
 
+	private Logger logger = Logger.getLogger(getClass());
+
 	private final Map<String, List<String>> keys = new HashMap<String, List<String>>();
+
+	private final static List<String> TYPE_PREFIX = Arrays.asList("以太网适配器", "隧道适配器");
 
 	public WindowsInetManager() {
 		initMap();
@@ -56,7 +64,7 @@ public class WindowsInetManager implements InetConnectionManager {
 				stringBuilder.append(line + "\n");
 
 			}
-			return null;
+			return inetConnectinoPropertiesMap;
 		} catch (Exception e) {
 			throw new RuntimeException("call command \"ipconfig /all\" error, maybe it's disabled.");
 		}
@@ -80,14 +88,30 @@ public class WindowsInetManager implements InetConnectionManager {
 			return null;
 		}
 		String name = lines[0];
-
-		if (name.endsWith(":")) {
-			name = name.substring(0, name.length() - 1);
-		}
-		Map<String, List<String>> winProperties = processProperties(lines, 1);
+		name = processName(name);
+		Map<String, List<String>> winProperties = processWinProperties(lines, 1);
 		Map<String, List<String>> propertiMaps = getInetPropertiesKey(winProperties);
 		propertiMaps.put(InetConnectinoProperties.KEY_NAME, Collections.singletonList(name));
 		return new InetConnectinoProperties(propertiMaps);
+	}
+
+	private Pattern nameTypePattern = Pattern.compile("^([^\\s]+)");
+
+	private String processName(String name) {
+		if (name.endsWith(":")) {
+			name = name.substring(0, name.length() - 1);
+		}
+		name = name.trim();
+		String nameType = getGroupOneIfMatch(nameTypePattern, name);
+		if (nameType != null) {
+			nameType = nameType.trim();
+			if (TYPE_PREFIX.contains(nameType)) {
+				int indexOf = name.indexOf(nameType);
+				name = name.substring(indexOf + nameType.length()).trim();
+			}
+		}
+		return name;
+
 	}
 
 	private String convertWinPropertiesToInetProperties(String winkey) {
@@ -114,7 +138,7 @@ public class WindowsInetManager implements InetConnectionManager {
 	}
 
 	private Map<String, List<String>> getInetPropertiesKey(Map<String, List<String>> winProperties) {
-		Map<String, List<String>> propertiMaps = new HashMap<String, List<String>>();
+		Map<String, List<String>> propertiMaps = new LinkedHashMap<String, List<String>>();
 		for (Entry<String, List<String>> entry : winProperties.entrySet()) {
 			String key = convertWinPropertiesToInetProperties(entry.getKey());
 			if (key == null) {
@@ -143,8 +167,8 @@ public class WindowsInetManager implements InetConnectionManager {
 		return null;
 	}
 
-	private Map<String, List<String>> processProperties(String[] lines, int start) {
-		Map<String, List<String>> winPropertiMaps = new HashMap<String, List<String>>();
+	private Map<String, List<String>> processWinProperties(String[] lines, int start) {
+		Map<String, List<String>> winPropertiMaps = new LinkedHashMap<String, List<String>>();
 		String lastKey = InetConnectinoProperties.KEY_NAME;
 		for (int i = start; i < lines.length; i++) {
 			String line = lines[i];
@@ -179,6 +203,8 @@ public class WindowsInetManager implements InetConnectionManager {
 		inetManager.getIpconfig();
 	}
 
+	private final static String DEFAULT_CONNECTION_NAME = "本地连接";
+
 	/**
 	 * 
 	 * (non-Jsdoc)
@@ -187,7 +213,11 @@ public class WindowsInetManager implements InetConnectionManager {
 	 */
 	@Override
 	public InetConnectinoProperties getDefaultConnectionProperties() {
-		return null;
+		Map<String, InetConnectinoProperties> ipconfig = getIpconfig();
+		if (ipconfig.get(DEFAULT_CONNECTION_NAME) != null) {
+			return ipconfig.get(DEFAULT_CONNECTION_NAME);
+		}
+		return ipconfig.entrySet().iterator().next().getValue();
 	}
 
 	/**
@@ -197,7 +227,6 @@ public class WindowsInetManager implements InetConnectionManager {
 	 */
 	@Override
 	public InetConnectinoProperties getConnectionProperties(String name) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -207,7 +236,73 @@ public class WindowsInetManager implements InetConnectionManager {
 	 * @see us.codecraft.dnstools.InetConnectionManager#setConnectionProperties(us.codecraft.dnstools.InetConnectinoProperties)
 	 */
 	@Override
-	public void setConnectionProperties(InetConnectinoProperties connectino) {
+	public void setConnectionDns(InetConnectinoProperties connectino) {
+		List<String> dnsServer = connectino.getDnsServer();
+		if (dnsServer == null) {
+			logger.info("No dns server, abort setting.");
+			return;
+		}
+		setConnectionDns(connectino.getName(), dnsServer);
+	}
+
+	/**
+	 * (non-Jsdoc)
+	 * 
+	 * @see us.codecraft.dnstools.InetConnectionManager#setConnectionDns(java.lang.String,
+	 *      java.util.List)
+	 */
+	@Override
+	public void setConnectionDns(String name, List<String> dnsServers) {
+		try {
+			if (dnsServers.size() >= 1) {
+				Process exec = Runtime.getRuntime().exec(
+						"netsh interface ip set dns \"" + name + "\" static " + dnsServers.get(0));
+				if (logger.isDebugEnabled()) {
+					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream(),
+							"GBK"));
+					String line = null;
+					while ((line = bufferedReader.readLine()) != null) {
+						logger.debug(line);
+					}
+				}
+			}
+			if (dnsServers.size() >= 2) {
+				Process exec = Runtime.getRuntime().exec(
+						"netsh interface ip add dns name=\"" + name + "\" addr=" + dnsServers.get(1) + " index=2 ");
+				if (logger.isDebugEnabled()) {
+					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream(),
+							"GBK"));
+					String line = null;
+					while ((line = bufferedReader.readLine()) != null) {
+						logger.debug(line);
+					}
+				}
+
+			}
+		} catch (IOException e) {
+			logger.warn("set dns error ", e);
+		}
+	}
+
+	/**
+	 * (non-Jsdoc)
+	 * 
+	 * @see us.codecraft.dnstools.InetConnectionManager#setConnectionDHCPEnabled(us.codecraft.dnstools.InetConnectinoProperties)
+	 */
+	@Override
+	public void setConnectionDHCPEnabled(InetConnectinoProperties connectino) {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * (non-Jsdoc)
+	 * 
+	 * @see us.codecraft.dnstools.InetConnectionManager#setConnectionDHCPEnabled(java.lang.String,
+	 *      boolean)
+	 */
+	@Override
+	public void setConnectionDHCPEnabled(String name, boolean enabled) {
 		// TODO Auto-generated method stub
 
 	}
