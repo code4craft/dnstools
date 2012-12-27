@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * TODO Comment of InetConfig
+ * InetConnectinoProperties
  * 
  * @author yihua.huang
  * 
