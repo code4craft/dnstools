@@ -15,9 +15,8 @@ import org.apache.log4j.Logger;
  */
 public class MacInetInetManager implements InetConnectionManager {
 
-	private String shellPath = MacInetInetManager.class.getClassLoader()
-			.getResource("").getPath()
-			+ "shell";
+	private String shellPath = MacInetInetManager.class.getResource("/shell")
+			.getPath();
 
 	private Logger logger = Logger.getLogger(getClass());
 
