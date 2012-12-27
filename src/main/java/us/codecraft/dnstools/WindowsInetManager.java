@@ -33,12 +33,18 @@ public class WindowsInetManager implements InetConnectionManager {
 	}
 
 	private void initMap() {
-		keys.put(InetConnectinoProperties.KEY_DNS_SERVER, Collections.singletonList("DNS 服务器"));
-		keys.put(InetConnectinoProperties.KEY_DESCRIPTION, Collections.singletonList("描述"));
-		keys.put(InetConnectinoProperties.KEY_DHCP_ENABLE, Collections.singletonList("DHCP 已启用"));
-		keys.put(InetConnectinoProperties.KEY_DHCP_SERVER, Collections.singletonList("DHCP 服务器"));
-		keys.put(InetConnectinoProperties.KEY_IPV4, Collections.singletonList("IPv4 地址"));
-		keys.put(InetConnectinoProperties.KEY_GATEWAY, Collections.singletonList("默认网关"));
+		keys.put(InetConnectinoProperties.KEY_DNS_SERVER,
+				Collections.singletonList("DNS 服务器"));
+		keys.put(InetConnectinoProperties.KEY_DESCRIPTION,
+				Collections.singletonList("描述"));
+		keys.put(InetConnectinoProperties.KEY_DHCP_ENABLE,
+				Collections.singletonList("DHCP 已启用"));
+		keys.put(InetConnectinoProperties.KEY_DHCP_SERVER,
+				Collections.singletonList("DHCP 服务器"));
+		keys.put(InetConnectinoProperties.KEY_IPV4,
+				Collections.singletonList("IPv4 地址"));
+		keys.put(InetConnectinoProperties.KEY_GATEWAY,
+				Collections.singletonList("默认网关"));
 	}
 
 	private Pattern titleLinePattern = Pattern.compile("^[^\\s]+");
@@ -48,7 +54,8 @@ public class WindowsInetManager implements InetConnectionManager {
 		try {
 			StringBuilder stringBuilder = new StringBuilder();
 			Process exec = Runtime.getRuntime().exec("ipconfig /all");
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream(), "GBK"));
+			BufferedReader bufferedReader = new BufferedReader(
+					new InputStreamReader(exec.getInputStream(), "GBK"));
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
 				Matcher matcher = titleLinePattern.matcher(line);
@@ -57,7 +64,9 @@ public class WindowsInetManager implements InetConnectionManager {
 							.toString());
 					if (inetConnectinoProperties != null) {
 						System.out.println(inetConnectinoProperties);
-						inetConnectinoPropertiesMap.put(inetConnectinoProperties.getName(), inetConnectinoProperties);
+						inetConnectinoPropertiesMap.put(
+								inetConnectinoProperties.getName(),
+								inetConnectinoProperties);
 					}
 					stringBuilder = new StringBuilder();
 				}
@@ -66,7 +75,8 @@ public class WindowsInetManager implements InetConnectionManager {
 			}
 			return inetConnectinoPropertiesMap;
 		} catch (Exception e) {
-			throw new RuntimeException("call command \"ipconfig /all\" error, maybe it's disabled.");
+			throw new RuntimeException(
+					"call command \"ipconfig /all\" error, maybe it's disabled.");
 		}
 	}
 
@@ -101,6 +111,7 @@ public class WindowsInetManager implements InetConnectionManager {
 		if (name.endsWith(":")) {
 			name = name.substring(0, name.length() - 1);
 		}
+<<<<<<< HEAD
 		name = name.trim();
 		String nameType = getGroupOneIfMatch(nameTypePattern, name);
 		if (nameType != null) {
@@ -112,6 +123,13 @@ public class WindowsInetManager implements InetConnectionManager {
 		}
 		return name;
 
+=======
+		Map<String, List<String>> winProperties = processProperties(lines, 1);
+		Map<String, List<String>> propertiMaps = getInetPropertiesKey(winProperties);
+		propertiMaps.put(InetConnectinoProperties.KEY_NAME,
+				Collections.singletonList(name));
+		return new InetConnectinoProperties(propertiMaps);
+>>>>>>> 4e4cc5ae7a89333156638abfa5dbaeecf5c757ab
 	}
 
 	private String convertWinPropertiesToInetProperties(String winkey) {
@@ -123,7 +141,8 @@ public class WindowsInetManager implements InetConnectionManager {
 		return null;
 	}
 
-	private final static List<String> booleanTrueDict = Arrays.asList("是", "yes", "true", "YES", "TRUE", "1");
+	private final static List<String> booleanTrueDict = Arrays.asList("是",
+			"yes", "true", "YES", "TRUE", "1");
 
 	private String convertToBoolean(String value) {
 		return String.valueOf(booleanTrueDict.contains(value));
@@ -137,8 +156,14 @@ public class WindowsInetManager implements InetConnectionManager {
 		return list;
 	}
 
+<<<<<<< HEAD
 	private Map<String, List<String>> getInetPropertiesKey(Map<String, List<String>> winProperties) {
 		Map<String, List<String>> propertiMaps = new LinkedHashMap<String, List<String>>();
+=======
+	private Map<String, List<String>> getInetPropertiesKey(
+			Map<String, List<String>> winProperties) {
+		Map<String, List<String>> propertiMaps = new HashMap<String, List<String>>();
+>>>>>>> 4e4cc5ae7a89333156638abfa5dbaeecf5c757ab
 		for (Entry<String, List<String>> entry : winProperties.entrySet()) {
 			String key = convertWinPropertiesToInetProperties(entry.getKey());
 			if (key == null) {
@@ -167,8 +192,14 @@ public class WindowsInetManager implements InetConnectionManager {
 		return null;
 	}
 
+<<<<<<< HEAD
 	private Map<String, List<String>> processWinProperties(String[] lines, int start) {
 		Map<String, List<String>> winPropertiMaps = new LinkedHashMap<String, List<String>>();
+=======
+	private Map<String, List<String>> processProperties(String[] lines,
+			int start) {
+		Map<String, List<String>> winPropertiMaps = new HashMap<String, List<String>>();
+>>>>>>> 4e4cc5ae7a89333156638abfa5dbaeecf5c757ab
 		String lastKey = InetConnectinoProperties.KEY_NAME;
 		for (int i = start; i < lines.length; i++) {
 			String line = lines[i];
