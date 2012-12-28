@@ -27,7 +27,6 @@ public class MiscUtils {
 				new InputStreamReader(inputStream));
 		String line = null;
 		while ((line = bufferedReader.readLine()) != null) {
-			System.out.println(line);
 			stringBuilder.append(line + "\n");
 		}
 		return stringBuilder.toString();

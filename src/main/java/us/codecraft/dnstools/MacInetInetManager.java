@@ -48,8 +48,7 @@ public class MacInetInetManager implements InetConnectionManager {
 			return;
 		}
 		try {
-			Runtime.getRuntime().exec(
-					"sh " + shellSetDns + " " + StringUtils.join(dns, " "));
+			execShellScript(shellSetDns, StringUtils.join(dns, " "));
 		} catch (IOException e) {
 			logger.warn("set dns error" + e);
 		}
@@ -74,7 +73,7 @@ public class MacInetInetManager implements InetConnectionManager {
 	public InetConnectinoProperties getDefaultConnectionProperties() {
 		String name = null;
 		try {
-			Process exec = exec(shellGetPsid, "");
+			Process exec = execShellScript(shellGetPsid, "");
 			String line = MiscUtils.toString(exec.getInputStream());
 			name = line.trim();
 		} catch (IOException e) {
@@ -88,23 +87,36 @@ public class MacInetInetManager implements InetConnectionManager {
 		return inetConnectinoProperties;
 	}
 
-	private Process exec(String filename, String param) throws IOException {
+	private Process execShellScript(String filename, String param)
+			throws IOException {
 		InputStream resourceAsStream = MacInetInetManager.class
 				.getResourceAsStream(filename);
 		String path = MacInetInetManager.class.getClassLoader().getResource("")
 				.getPath();
-		File filePath = new File(path + "/temp/shell");
+		String tempFileName = path + "/temp/" + filename;
+		File tempDir = new File(path + "/temp/");
+		File tempFile = new File(tempFileName);
+		File filePath = tempFile.getParentFile();
+		if (!(tempDir.exists()) && !(tempDir.isDirectory())) {
+			tempDir.mkdirs();
+		}
 		if (!(filePath.exists()) && !(filePath.isDirectory())) {
 			filePath.mkdirs();
 		}
-		String tempFileName = path + "/temp/" + filename;
-		System.out.println(tempFileName);
-		File tempFile = new File(tempFileName);
 		OutputStream outputStream = new FileOutputStream(tempFile);
 		IOUtils.copy(resourceAsStream, outputStream);
 		resourceAsStream.close();
 		outputStream.close();
-		Process exec = Runtime.getRuntime().exec("sh " + tempFileName);
+		Process exec = null;
+		if (StringUtils.isBlank(param)) {
+			exec = Runtime.getRuntime().exec("sh " + tempFileName);
+		} else {
+			exec = Runtime.getRuntime()
+					.exec("sh " + tempFileName + " " + param);
+		}
+		tempFile.deleteOnExit();
+		filePath.deleteOnExit();
+		tempDir.deleteOnExit();
 		return exec;
 	}
 
@@ -114,8 +126,7 @@ public class MacInetInetManager implements InetConnectionManager {
 	private List<String> getDnsServers(String name) {
 		List<String> dnsServers = new ArrayList<String>();
 		try {
-			Process exec = Runtime.getRuntime().exec(
-					"sh " + shellGetDns + " " + name);
+			Process exec = execShellScript(shellGetDns, name);
 			String block = MiscUtils.toString(exec.getInputStream());
 			block = MiscUtils.getGroupOneIfMatch(dnsServersAddress, block);
 			if (block == null) {
