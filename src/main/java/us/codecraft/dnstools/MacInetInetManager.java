@@ -1,11 +1,16 @@
 package us.codecraft.dnstools;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -15,27 +20,15 @@ import org.apache.log4j.Logger;
  */
 public class MacInetInetManager implements InetConnectionManager {
 
-	private String shellPath = MacInetInetManager.class.getResource("/shell")
-			.getPath();
+	private String shellPath = "/shell/";
 
 	private Logger logger = Logger.getLogger(getClass());
 
-	private String shellSetDns;
+	private String shellSetDns = shellPath + "setdns.sh";
 
-	private String shellGetPsid;
+	private String shellGetPsid = shellPath + "getpsid.sh";
 
-	private String shellGetDns;
-
-	/**
-	 * 
-	 */
-	public MacInetInetManager() {
-		shellSetDns = shellPath + "/setdns.sh";
-		shellGetPsid = shellPath + "/getpsid.sh ";
-		shellGetDns = shellPath + "/getdns.sh ";
-	}
-
-	// nslookup a
+	private String shellGetDns = shellPath + "getdns.sh";
 
 	/*
 	 * (non-Javadoc)
@@ -81,7 +74,7 @@ public class MacInetInetManager implements InetConnectionManager {
 	public InetConnectinoProperties getDefaultConnectionProperties() {
 		String name = null;
 		try {
-			Process exec = Runtime.getRuntime().exec("sh " + shellGetPsid);
+			Process exec = exec(shellGetPsid, "");
 			String line = MiscUtils.toString(exec.getInputStream());
 			name = line.trim();
 		} catch (IOException e) {
@@ -93,6 +86,26 @@ public class MacInetInetManager implements InetConnectionManager {
 		List<String> dnsServers = getDnsServers(name);
 		inetConnectinoProperties.setDnsServer(dnsServers);
 		return inetConnectinoProperties;
+	}
+
+	private Process exec(String filename, String param) throws IOException {
+		InputStream resourceAsStream = MacInetInetManager.class
+				.getResourceAsStream(filename);
+		String path = MacInetInetManager.class.getClassLoader().getResource("")
+				.getPath();
+		File filePath = new File(path + "/temp/shell");
+		if (!(filePath.exists()) && !(filePath.isDirectory())) {
+			filePath.mkdirs();
+		}
+		String tempFileName = path + "/temp/" + filename;
+		System.out.println(tempFileName);
+		File tempFile = new File(tempFileName);
+		OutputStream outputStream = new FileOutputStream(tempFile);
+		IOUtils.copy(resourceAsStream, outputStream);
+		resourceAsStream.close();
+		outputStream.close();
+		Process exec = Runtime.getRuntime().exec("sh " + tempFileName);
+		return exec;
 	}
 
 	private Pattern dnsServersAddress = Pattern.compile(
