@@ -175,7 +175,8 @@ public class InetConnectinoProperties {
 		setSingle(KEY_GATEWAY, gateway);
 	}
 
-	private final static List<String> booleanTrueDict = Arrays.asList("是", "yes", "true", "YES", "TRUE", "1");
+	private final static List<String> booleanTrueDict = Arrays.asList("是",
+			"yes", "true", "YES", "TRUE", "1");
 
 	private boolean convertToBoolean(String value) {
 		return booleanTrueDict.contains(value);
@@ -218,14 +219,13 @@ public class InetConnectinoProperties {
 	 * @return
 	 */
 	public static boolean needIpv4Value(String key) {
-		return KEY_DHCP_SERVER.equalsIgnoreCase(key) || KEY_IPV4.equalsIgnoreCase(key)
+		return KEY_DHCP_SERVER.equalsIgnoreCase(key)
+				|| KEY_IPV4.equalsIgnoreCase(key)
 				|| KEY_DNS_SERVER.equalsIgnoreCase(key);
 	}
 
-	private static Pattern ipv4Pattern = Pattern.compile("((?:\\d{1,3}\\.){3}\\d{1,3})");
-
 	public static List<String> convertIpv4Address(List<String> list) {
-		return getGroupOneIfMatch(ipv4Pattern, list);
+		return getGroupOneIfMatch(MiscUtils.ipv4Pattern, list);
 	}
 
 	/**
@@ -238,7 +238,8 @@ public class InetConnectinoProperties {
 		return KEY_DHCP_ENABLE.equalsIgnoreCase(key);
 	}
 
-	private static List<String> getGroupOneIfMatch(Pattern pattern, List<String> lines) {
+	private static List<String> getGroupOneIfMatch(Pattern pattern,
+			List<String> lines) {
 		List<String> result = new ArrayList<String>();
 		for (String line : lines) {
 			String groupOneIfMatch = getGroupOneIfMatch(pattern, line);
@@ -264,9 +265,12 @@ public class InetConnectinoProperties {
 	 */
 	@Override
 	public String toString() {
-		return "InetConnectinoProperties [getName()=" + getName() + ", getDescription()=" + getDescription()
-				+ ", getIpv4Address()=" + getIpv4Address() + ", isDHCPenabled()=" + isDHCPenabled()
-				+ ", getDhcpAddress()=" + getDhcpAddress() + ", getDnsServer()=" + getDnsServer() + ", getGateway()="
+		return "InetConnectinoProperties [getName()=" + getName()
+				+ ", getDescription()=" + getDescription()
+				+ ", getIpv4Address()=" + getIpv4Address()
+				+ ", isDHCPenabled()=" + isDHCPenabled()
+				+ ", getDhcpAddress()=" + getDhcpAddress()
+				+ ", getDnsServer()=" + getDnsServer() + ", getGateway()="
 				+ getGateway() + ", getIpv6Address()=" + getIpv6Address() + "]";
 	}
 
