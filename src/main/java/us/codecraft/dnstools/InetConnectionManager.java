@@ -20,4 +20,6 @@ public interface InetConnectionManager {
 
 	public void setConnectionDHCPEnabled(String name, boolean enabled);
 
+	public void clearDnsCache();
+
 }

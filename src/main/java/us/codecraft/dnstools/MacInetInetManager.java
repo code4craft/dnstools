@@ -20,6 +20,17 @@ import org.apache.log4j.Logger;
  */
 public class MacInetInetManager implements InetConnectionManager {
 
+	private volatile static MacInetInetManager INSTATNCE;
+
+	public static MacInetInetManager getInstance() {
+		if (INSTATNCE == null) {
+			synchronized (MacInetInetManager.class) {
+				INSTATNCE = new MacInetInetManager();
+			}
+		}
+		return INSTATNCE;
+	}
+
 	private String shellPath = "/shell/";
 
 	private Logger logger = Logger.getLogger(getClass());
@@ -48,7 +59,9 @@ public class MacInetInetManager implements InetConnectionManager {
 			return;
 		}
 		try {
-			execShellScript(shellSetDns, StringUtils.join(dns, " "));
+			execShellScript(shellSetDns,
+					name + " " + StringUtils.join(dns, " "));
+			logger.info("set dns to " + dns);
 		} catch (IOException e) {
 			logger.warn("set dns error" + e);
 		}
@@ -91,10 +104,9 @@ public class MacInetInetManager implements InetConnectionManager {
 			throws IOException {
 		InputStream resourceAsStream = MacInetInetManager.class
 				.getResourceAsStream(filename);
-		String path = MacInetInetManager.class.getClassLoader().getResource("")
-				.getPath();
-		String tempFileName = path + "/temp/" + filename;
-		File tempDir = new File(path + "/temp/");
+		String path = "/tmp/";
+		String tempFileName = path + filename;
+		File tempDir = new File(path);
 		File tempFile = new File(tempFileName);
 		File filePath = tempFile.getParentFile();
 		if (!(tempDir.exists()) && !(tempDir.isDirectory())) {
@@ -177,6 +189,22 @@ public class MacInetInetManager implements InetConnectionManager {
 	@Override
 	public void setConnectionDHCPEnabled(String name, boolean enabled) {
 		throw new UnsupportedOperationException();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see us.codecraft.dnstools.InetConnectionManager#clearDnsCache()
+	 */
+	@Override
+	public void clearDnsCache() {
+		try {
+			Runtime.getRuntime().exec("dscacheutil -flushcache");
+			Runtime.getRuntime().exec("killall -HUP mDNSResponder");
+			logger.info("clear dns cache ");
+		} catch (IOException e) {
+			logger.warn("clear dns cache fail!");
+		}
 	}
 
 }

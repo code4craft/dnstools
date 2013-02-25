@@ -320,4 +320,15 @@ public class WindowsInetManager implements InetConnectionManager {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see us.codecraft.dnstools.InetConnectionManager#clearDnsCache()
+	 */
+	@Override
+	public void clearDnsCache() {
+		// TODO Auto-generated method stub
+
+	}
+
 }
